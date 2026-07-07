@@ -18,14 +18,27 @@
     <div class="chat-container">
         <h2>🤖 Assistente IA</h2>
         <div class="historico" id="historico"></div>
-        <div>
+
+        <div style="margin-top:10px;">
+            <input type="text" id="nickname" placeholder="Digite seu nickname (obrigatório)" />
+        </div>
+
+        <div style="margin-top:10px;">
             <input type="text" id="pergunta" placeholder="Digite sua pergunta...">
             <button onclick="enviarMensagem()">Enviar</button>
+        </div>
+
+        <div style="margin-top:10px; display:flex; gap:8px;">
+            <button style="background:#6f42c1; width:100%;" onclick="verRanking()">🏆 Ver Ranking</button>
+        </div>
+
+        <div id="rankingWrap" style="display:none; margin-top:12px;">
+            <h3>🏆 Ranking Global</h3>
+            <div id="ranking" style="background:#eef2f3; padding:10px; border-radius:6px;"></div>
         </div>
     </div>
 
     <script>
-        // COLE A URL DO SEU RENDER AQUI (mantenha o /api/chat no final)
         const URL_BACKEND = "https://api-agente-ia-ylph.onrender.com/api/chat";
 
         async function enviarMensagem() {
@@ -33,34 +46,71 @@
             const historico = document.getElementById("historico");
             const texto = input.value;
 
-            if(!texto) return;
+            if (!texto) return;
 
-            // 1. Mostra a mensagem do usuário na tela
+            const nickname = document.getElementById("nickname").value;
+            if (!nickname || !String(nickname).trim()) {
+                historico.innerHTML += `<div class="mensagem bot">Informe um nickname para jogar ⚠️</div>`;
+                return;
+            }
+
+            // Mostra a mensagem do usuário
             historico.innerHTML += `<div class="mensagem user">${texto}</div>`;
             input.value = "";
             historico.innerHTML += `<div class="mensagem bot" id="loading">Pensando...</div>`;
 
             try {
-                // 2. Faz o Fetch (POST) para a SUA API na Nuvem
                 const resposta = await fetch(URL_BACKEND, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ pergunta: texto })
+                    body: JSON.stringify({ nickname: nickname.trim(), pergunta: texto })
                 });
 
                 const dados = await resposta.json();
 
-                // 3. Remove o "Pensando..." e mostra a resposta real
+                // Remove loading e mostra resposta
                 document.getElementById("loading").remove();
-                historico.innerHTML += `<div class="mensagem bot">${dados.resposta}</div>`;
-                
+                historico.innerHTML += `<div class="mensagem bot">${dados.resposta || dados.erro || ""}</div>`;
+
                 // Rola o chat para baixo
                 historico.scrollTop = historico.scrollHeight;
-
             } catch (erro) {
-                document.getElementById("loading").innerHTML = "Erro de conexão com o Servidor ❌";
+                const loading = document.getElementById("loading");
+                if (loading) loading.innerHTML = "Erro de conexão com o Servidor ❌";
+            }
+        }
+
+        async function verRanking() {
+            const rankingWrap = document.getElementById("rankingWrap");
+            const rankingDiv = document.getElementById("ranking");
+
+            rankingWrap.style.display = "block";
+            rankingDiv.innerHTML = "Carregando...";
+
+            try {
+                const resposta = await fetch("https://api-agente-ia-ylph.onrender.com/api/ranking");
+                const dados = await resposta.json();
+
+                const ranking = dados.ranking || [];
+                if (!ranking.length) {
+                    rankingDiv.innerHTML = "Sem jogadores ainda.";
+                    return;
+                }
+
+                rankingDiv.innerHTML = ranking.map((j, idx) => {
+                    const medalha = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+                    return `
+                        <div style="padding:6px 0; border-bottom:1px solid #ddd; display:flex; justify-content:space-between;">
+                            <div>${medalha} <b>#${idx + 1}</b> ${j.nome} <span style="color:#666">(${j.titulo})</span></div>
+                            <div><b>${j.xp}</b> XP</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                rankingDiv.innerHTML = "Erro ao carregar ranking ❌";
             }
         }
     </script>
 </body>
 </html>
+

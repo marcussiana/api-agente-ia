@@ -1,9 +1,22 @@
-# TODO - Atualizações para Deploy na Nuvem
+# TODO - Gamificação e Ranking (Sprint 2)
 
-## Concluído
-✅ 1. Verificar server.js - Já continha o código correto com process.env.PORT  
-✅ 2. Atualizar package.json - Seção \"scripts\" formatada com \"start\": \"node server.js\"
+## Status
+✅ 1. Modelo Mongoose: `models/Jogador.js` (nome único + xp default 0)
+✅ 2. Backend:
+- Conexão MongoDB via `MONGODB_URI`
+- Função `adicionarXP(nickname, quantidade)` com upsert
+- Tools do Gemini com schema da função
+✅ 3. Rota `GET /api/ranking` (Top 10 ordenado por XP)
+✅ 4. Front-end: nickname obrigatório + botão 🏆 Ver Ranking
 
 ## Próximos passos
-⏳ 3. Testar: `npm start` (deve mostrar \"🚀 Servidor rodando na porta 3000\")  
-⏳ 4. Aguardar próximos passos do deploy na nuvem
+⏳ 5. Testar localmente:
+- `npm start`
+- Enviar mensagem com nickname
+- Confirmar XP alterando no MongoDB Atlas
+- Clicar em “Ver Ranking”
+
+## Easter eggs (opcional)
+⏳ 6. Confete ao detectar “Parabéns” ou “Acertou” na resposta
+⏳ 7. Ajustar títulos (Novato/Lenda) conforme regra desejada
+
